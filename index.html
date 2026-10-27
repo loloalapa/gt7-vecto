@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0B0D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<title>GT7 Vectoriser</title>
+<style>
+:root{--bg:#f4f4f6;--card:#fff;--tx:#17171a;--mu:#6b6b75;--bd:#dcdce2;--ac:#e8401f;--ac2:#fff;--vw:#ddd;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B0B0D;--card:#16161a;--tx:#f2f2f5;--mu:#9a9aa6;--bd:#2a2a31;--vw:#26262c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0B0B0D;--card:#16161a;--tx:#f2f2f5;--mu:#9a9aa6;--bd:#2a2a31;--vw:#26262c;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:680px;margin:0 auto;padding:12px 14px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 12px}
+h1{font-size:20px;margin:0}h1 small{display:block;font-size:12px;color:var(--mu);font-weight:400}
+h2{font-size:14px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu)}
+h2 b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ac);color:#fff;font-size:12px;margin-right:6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+button,.btn{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:10px 14px;cursor:pointer;display:inline-block}
+button.p,.btn.p{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600}
+button.on{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.drop{border:2px dashed var(--bd);border-radius:12px;padding:18px;text-align:center;color:var(--mu)}
+.drop.h{border-color:var(--ac)}
+label.f{display:block;margin:10px 0 2px;font-size:13px;color:var(--mu)}
+label.f span{float:right;color:var(--tx);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--ac)}
+input[type=number]{width:90px;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pv{max-height:260px;overflow:auto;border-radius:10px;background:var(--vw);margin-top:8px;text-align:center}
+.pv img{max-width:100%;display:block;margin:auto}
+#view{background:var(--vw);border-radius:10px;overflow:auto;max-height:70vh;margin-top:8px}
+#view img{display:block;width:100%;image-rendering:pixelated}
+.fl{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.fl:last-child{border:0}.ok{color:#22a559}.ko{color:#e0a000}
+#st{color:var(--mu);margin:8px 0;min-height:1.4em}
+details{margin-top:6px}summary{cursor:pointer;font-weight:600}
+ol{padding-left:20px;margin:8px 0}[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <h1>GT7 Vectoriser<small data-i="sub"></small></h1>
+ <div class="row"><button id="fr">FR</button><button id="en">EN</button></div>
+</header>
+
+<section class="card">
+ <h2><b>1</b><span data-i="s1"></span></h2>
+ <div class="drop" id="drop"><div data-i="drop"></div>
+  <div class="row" style="justify-content:center;margin-top:10px">
+   <label class="btn p" for="fi" data-i="choose"></label>
+   <label class="btn" for="fc" data-i="cam"></label>
+  </div>
+  <div style="font-size:12px;margin-top:8px">PNG, JPG, BMP, WebP, GIF</div></div>
+ <input id="fi" type="file" accept="image/*" hidden>
+ <input id="fc" type="file" accept="image/*" capture="environment" hidden>
+ <div class="pv" id="srcbox" hidden><img id="srcimg" alt=""></div>
+</section>
+
+<section class="card">
+ <h2><b>2</b><span data-i="s2"></span></h2>
+ <div class="seg">
+  <button data-m="color" class="on" data-i="mc"></button>
+  <button data-m="bw" data-i="mb"></button>
+  <button data-m="gray" data-i="mg"></button>
+ </div>
+</section>
+
+<section class="card">
+ <h2><b>3</b><span data-i="s3"></span></h2>
+ <div id="gcol"><label class="f"><span id="vcol">8</span><i data-i="colors"></i></label>
+  <input id="colors" type="range" min="2" max="24" value="8"></div>
+ <div id="gthr" hidden><label class="f"><span id="vthr">128</span><i data-i="thr"></i></label>
+  <input id="thr" type="range" min="1" max="254" value="128"></div>
+ <label class="f" style="display:flex;gap:8px;align-items:center"><input id="nobg" type="checkbox"><span style="float:none;color:var(--tx)" data-i="nobg"></span></label>
+</section>
+
+<section class="card">
+ <h2><b>4</b><span data-i="s4"></span></h2>
+ <label class="f"><span id="vdetail">256</span><i data-i="detail"></i></label>
+ <input id="detail" type="range" min="64" max="512" step="16" value="256">
+ <label class="f"><span id="veps">0.8</span><i data-i="simp"></i></label>
+ <input id="eps" type="range" min="0.2" max="4" step="0.1" value="0.8">
+ <label class="f"><span id="vminA">4</span><i data-i="clean"></i></label>
+ <input id="minA" type="range" min="0" max="60" value="4">
+ <label class="f"><span id="vsm">1</span><i data-i="smooth"></i></label>
+ <input id="sm" type="range" min="0" max="3" value="1">
+ <div class="row" style="margin-top:12px">
+  <label><span data-i="budget"></span> <input id="kb" type="number" min="2" max="15" step="0.5" value="15"></label>
+  <label><span data-i="maxf"></span> <input id="maxf" type="number" min="0" max="99" value="12"></label>
+ </div>
+ <div class="row" style="margin-top:12px"><button id="reset" data-i="reset"></button></div>
+</section>
+
+<section class="card">
+ <h2><b>5</b><span data-i="s5"></span></h2>
+ <button class="p" id="go" style="width:100%;padding:14px" data-i="go"></button>
+ <div id="st"></div>
+ <div id="out" hidden>
+  <div class="row"><button id="tpix" data-i="pix"></button><button id="tvec" class="on" data-i="vec"></button></div>
+  <label class="f"><span id="vz">×1.0</span><i data-i="zoom"></i></label>
+  <input id="zoom" type="range" min="1" max="8" step="0.5" value="1">
+  <div id="view"><img id="vimg" alt=""></div>
+  <div id="stats" style="margin:10px 0;color:var(--mu)"></div>
+  <button class="p" id="zip" style="width:100%" data-i="zip"></button>
+  <div id="list" style="margin-top:8px"></div>
+ </div>
+</section>
+
+<section class="card">
+ <details><summary data-i="guide"></summary>
+  <ol><li data-i="g1"></li><li data-i="g2"></li><li data-i="g3"></li><li data-i="g4"></li><li data-i="g5"></li></ol>
+  <p style="color:var(--mu);font-size:13px" data-i="gnote"></p></details>
+ <details><summary data-i="faq"></summary><p style="color:var(--mu)" data-i="faqa"></p></details>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const I={fr:{sub:"Images → décalcomanies SVG pour Gran Turismo 7",s1:"Image",s2:"Mode",s3:"Couleurs",s4:"Options",s5:"Résultat",
+drop:"Glisse, colle (Ctrl+V) ou choisis une image",choose:"Choisir une image",cam:"Caméra",mc:"Couleurs",mb:"Noir & blanc",mg:"Gris",
+colors:"Nombre de couleurs / niveaux",thr:"Seuil noir/blanc",nobg:"Supprimer le fond blanc (transparent)",detail:"Détail (résolution max, px)",
+simp:"Simplification des courbes (px)",clean:"Suppression des petites taches",smooth:"Lissage des contours",budget:"Budget / fichier (Ko)",maxf:"Fichiers max (0 = illimité)",
+reset:"Réinitialiser les réglages",go:"Vectoriser",pix:"Pixels",vec:"Vectoriel",zoom:"Zoom",zip:"Télécharger le ZIP",
+nofile:"Ajoute d’abord une image.",work:"Vectorisation…",empty:"Aucune forme détectée.",files:"fichier(s)",shapes:"formes",adj:"Simplification ajustée automatiquement pour respecter la limite.",
+over:"Un fichier dépasse le budget : augmente la simplification ou réduis le détail.",save:"Enregistrer",saved:"Fichier enregistré.",fail:"Enregistrement annulé.",
+guide:"Guide d’import GT7",g1:"Télécharge le ZIP et transfère les SVG sur ta console/PC.",g2:"Dans GT7 : Livrée → Décalcomanies → Importer depuis le groupe/la galerie.",g3:"Importe les fichiers dans l’ordre exact 01, 02, 03…",g4:"Garde la même taille, position et rotation pour tous les fichiers : ils s’emboîtent parfaitement.",g5:"Groupe les décalcomanies pour les déplacer ensemble.",
+gnote:"Chaque fichier < 15 Ko, sans dégradé, contour, transparence ni image externe. Aucune forme n’est coupée entre deux fichiers.",
+faq:"Mes images sont-elles envoyées sur un serveur ?",faqa:"Non, tout est traité sur ton téléphone, dans l’application."},
+en:{sub:"Images → SVG decals for Gran Turismo 7",s1:"Image",s2:"Mode",s3:"Colors",s4:"Options",s5:"Result",
+drop:"Drop, paste (Ctrl+V) or pick an image",choose:"Choose an image",cam:"Camera",mc:"Colors",mb:"Black & white",mg:"Gray",
+colors:"Number of colors / levels",thr:"Black/white threshold",nobg:"Remove white background (transparent)",detail:"Detail (max resolution, px)",
+simp:"Curve simplification (px)",clean:"Small speck removal",smooth:"Edge smoothing",budget:"Budget / file (KB)",maxf:"Max files (0 = unlimited)",
+reset:"Reset settings",go:"Vectorise",pix:"Pixels",vec:"Vector",zoom:"Zoom",zip:"Download ZIP",
+nofile:"Add an image first.",work:"Vectorising…",empty:"No shape detected.",files:"file(s)",shapes:"shapes",adj:"Simplification auto-adjusted to meet the limit.",
+over:"A file exceeds the budget: raise simplification or lower detail.",save:"Save",saved:"File saved.",fail:"Save cancelled.",
+guide:"GT7 import guide",g1:"Download the ZIP and move the SVGs to your console/PC.",g2:"In GT7: Livery → Decals → Import from Livery Group / Gallery.",g3:"Import the files in exact order 01, 02, 03…",g4:"Keep the same size, position and rotation for every file: they fit together perfectly.",g5:"Group the decals to move them together.",
+gnote:"Each file is under 15 KB, with no gradients, strokes, transparency or external images. Shapes are never cut between two files.",
+faq:"Are my images uploaded to a server?",faqa:"No, everything runs on your phone, inside the app."}};
+let lang=/^fr/.test(navigator.language)?"fr":"en",mode="color",src=null,res=null,tab="vec",urls=[];
+const t=k=>I[lang][k];
+function tr(){document.documentElement.lang=lang;document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));$("fr").classList.toggle("on",lang=="fr");$("en").classList.toggle("on",lang=="en");if(res)list()}
+$("fr").onclick=()=>{lang="fr";tr()};$("en").onclick=()=>{lang="en";tr()};
+
+// sliders
+[["colors","vcol"],["thr","vthr"],["detail","vdetail"],["eps","veps"],["minA","vminA"],["sm","vsm"]].forEach(([a,b])=>{$(a).oninput=()=>$(b).textContent=$(a).value});
+$("zoom").oninput=()=>{$("vz").textContent="×"+(+$("zoom").value).toFixed(1);$("vimg").style.width=(+$("zoom").value*100)+"%"};
+document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll("[data-m]").forEach(x=>x.classList.toggle("on",x==b));$("gcol").hidden=mode=="bw";$("gthr").hidden=mode!="bw"});
+const DEF={colors:8,thr:128,detail:256,eps:.8,minA:4,sm:1,kb:15,maxf:12};
+$("reset").onclick=()=>{for(const k in DEF){$(k).value=DEF[k];$(k).oninput&&$(k).oninput()}$("nobg").checked=false};
+
+// image input
+function load(f){if(!f||!/^image/.test(f.type))return;const u=URL.createObjectURL(f),im=new Image();
+ im.onload=()=>{src={img:im,w:im.naturalWidth,h:im.naturalHeight,name:(f.name||"decal").replace(/\.[^.]+$/,"")||"decal"};$("srcimg").src=u;$("srcbox").hidden=false;$("st").textContent=""};im.src=u}
+$("fi").onchange=e=>load(e.target.files[0]);$("fc").onchange=e=>load(e.target.files[0]);
+document.addEventListener("paste",e=>{for(const i of e.clipboardData.items)if(i.type.startsWith("image")){load(i.getAsFile());break}});
+const dz=$("drop");["dragenter","dragover"].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.add("h")}));
+["dragleave","drop"].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.remove("h")}));
+dz.addEventListener("drop",e=>load(e.dataTransfer.files[0]));
+
+// geometry
+const hx=c=>"#"+c.map(v=>v.toString(16).padStart(2,"0")).join("");
+const area=p=>{let s=0;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];s+=a[0]*b[1]-b[0]*a[1]}return s/2};
+const bbox=p=>{let a=1e9,b=1e9,c=-1,d=-1;for(const q of p){if(q[0]<a)a=q[0];if(q[1]<b)b=q[1];if(q[0]>c)c=q[0];if(q[1]>d)d=q[1]}return[a,b,c,d]};
+function rdp(p,e){if(p.length<3)return p;const a=p[0],b=p[p.length-1],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);let md=0,mi=0;
+ for(let i=1;i<p.length-1;i++){const d=l?Math.abs(dy*(p[i][0]-a[0])-dx*(p[i][1]-a[1]))/l:Math.hypot(p[i][0]-a[0],p[i][1]-a[1]);if(d>md){md=d;mi=i}}
+ return md>e?rdp(p.slice(0,mi+1),e).slice(0,-1).concat(rdp(p.slice(mi),e)):[a,b]}
+function simp(lp,e){const n=lp.length;const q=lp.filter((c,i)=>{const a=lp[(i+n-1)%n],b=lp[(i+1)%n];return(c[0]-a[0])*(b[1]-c[1])!==(c[1]-a[1])*(b[0]-c[0])});
+ if(q.length<4||e<=0)return q;let fi=0,fd=-1;q.forEach((c,i)=>{const d=(c[0]-q[0][0])**2+(c[1]-q[0][1])**2;if(d>fd){fd=d;fi=i}});
+ return rdp(q.slice(0,fi+1),e).slice(0,-1).concat(rdp(q.slice(fi).concat([q[0]]),e).slice(0,-1))}
+function trace(m,w,h){const W=w+1,o=new Map(),add=(a,b)=>{let l=o.get(a);if(!l)o.set(a,l=[]);l.push(b)};
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(m[y*w+x]){const A=y*W+x,B=A+1,C=A+W+1,D=A+W;
+  if(y==0||!m[(y-1)*w+x])add(A,B);if(x==w-1||!m[y*w+x+1])add(B,C);if(y==h-1||!m[(y+1)*w+x])add(C,D);if(x==0||!m[y*w+x-1])add(D,A)}
+ const loops=[];for(const[s,l]of o)while(l.length){const p=[s];let c=l.pop();while(c!==s){p.push(c);c=o.get(c).pop()}loops.push(p.map(k=>[k%W,(k/W)|0]))}
+ return loops}
+function kmeans(px,k){const n=px.length;if(!n)return[];const st=Math.max(1,Math.floor(n/5000)),S=[];for(let i=0;i<n;i+=st)S.push(px[i]);
+ const d=(a,b)=>(a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2;let C=[S[0].slice()];const md=S.map(p=>d(p,C[0]));
+ while(C.length<k){let bi=0;for(let i=1;i<S.length;i++)if(md[i]>md[bi])bi=i;if(!md[bi])break;const c=S[bi].slice();C.push(c);S.forEach((p,i)=>md[i]=Math.min(md[i],d(p,c)))}
+ for(let it=0;it<8;it++){const sm=C.map(()=>[0,0,0,0]);for(const p of S){let b=0,bd=1e9;C.forEach((c,j)=>{const e=d(p,c);if(e<bd){bd=e;b=j}});const s=sm[b];s[0]+=p[0];s[1]+=p[1];s[2]+=p[2];s[3]++}
+  C=C.map((c,j)=>sm[j][3]?[sm[j][0]/sm[j][3],sm[j][1]/sm[j][3],sm[j][2]/sm[j][3]]:c)}
+ return C.map(c=>c.map(Math.round))}
+
+// packing: shapes never split, one shared viewBox so files align
+function build(raw,pal,W,H,bg,eps,minA,budget){
+ const shapes=[];
+ raw.forEach((loops,j)=>{if(!loops)return;const outs=[],holes=[];
+  for(const lp of loops){const a=area(lp);if(Math.abs(a)<minA)continue;const s=simp(lp,eps);if(s.length<3)continue;(a>0?outs:holes).push({s,b:bbox(s),a:Math.abs(a),h:[]})}
+  for(const h of holes){let best=null;for(const o of outs)if(o.b[0]<=h.b[0]&&o.b[1]<=h.b[1]&&o.b[2]>=h.b[2]&&o.b[3]>=h.b[3]&&(!best||o.a<best.a))best=o;if(best)best.h.push(h)}
+  for(const o of outs)shapes.push({c:j,d:[o.s,...o.h.map(h=>h.s)].map(p=>"M"+p.map(q=>q[0]+" "+q[1]).join(" ")+"z").join("")})});
+ const hd=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`,ft="</svg>";
+ const ph=c=>`<path fill="${pal[c]}" fill-rule="evenodd" d="`,tl='"/>',HL=ph(0).length,TL=tl.length;
+ const files=[];let cur=null;const open=()=>{cur={parts:[],n:hd.length+ft.length,last:-1,over:false};files.push(cur)};
+ if(bg>=0){open();const r=`<rect width="${W}" height="${H}" fill="${pal[bg]}"/>`;cur.parts.push({raw:r});cur.n+=r.length}
+ for(const s of shapes){if(!cur)open();let g=cur.last!==s.c,cost=s.d.length+(g?HL+TL:0);
+  if(cur.n+cost>budget&&cur.parts.length){open();g=true;cost=s.d.length+HL+TL}
+  if(g)cur.parts.push({c:s.c,d:[s.d]});else cur.parts[cur.parts.length-1].d.push(s.d);
+  cur.n+=cost;cur.last=s.c;if(cur.n>budget)cur.over=true}
+ if(!files.length)open();
+ files.forEach(f=>{f.inner=f.parts.map(p=>p.raw||ph(p.c)+p.d.join("")+tl).join("");f.svg=hd+f.inner+ft;f.size=f.svg.length});
+ return{files,hd,ft,shapes:shapes.length}}
+
+async function run(){
+ if(!src){$("st").textContent=t("nofile");return}
+ $("st").textContent=t("work");$("out").hidden=true;await new Promise(r=>setTimeout(r,40));
+ const sc=Math.min(1,+$("detail").value/Math.max(src.w,src.h)),w=Math.max(1,Math.round(src.w*sc)),h=Math.max(1,Math.round(src.h*sc)),N=w*h;
+ const cv=document.createElement("canvas");cv.width=w;cv.height=h;const cx=cv.getContext("2d",{willReadFrequently:true});cx.drawImage(src.img,0,0,w,h);
+ const D=cx.getImageData(0,0,w,h).data,nb=$("nobg").checked,k=+$("colors").value,L=new Int16Array(N).fill(-1);let pal=[];
+ const ok=i=>D[i*4+3]>=128&&!(nb&&D[i*4]>240&&D[i*4+1]>240&&D[i*4+2]>240),lum=i=>.299*D[i*4]+.587*D[i*4+1]+.114*D[i*4+2];
+ if(mode=="bw"){const th=+$("thr").value;pal=["#ffffff","#000000"];for(let i=0;i<N;i++)if(ok(i))L[i]=lum(i)<th?1:0}
+ else if(mode=="gray"){for(let j=0;j<k;j++){const v=Math.round((j+.5)*255/k);pal.push(hx([v,v,v]))}for(let i=0;i<N;i++)if(ok(i))L[i]=Math.min(k-1,Math.floor(lum(i)*k/256))}
+ else{const px=[],ix=[];for(let i=0;i<N;i++)if(ok(i)){px.push([D[i*4],D[i*4+1],D[i*4+2]]);ix.push(i)}
+  const C=kmeans(px,k);pal=C.map(hx);px.forEach((p,n)=>{let b=0,bd=1e9;for(let j=0;j<C.length;j++){const e=(p[0]-C[j][0])**2+(p[1]-C[j][1])**2+(p[2]-C[j][2])**2;if(e<bd){bd=e;b=j}}L[ix[n]]=b})}
+ for(let p=0;p<+$("sm").value;p++){const O=L.slice(),cn=new Int16Array(pal.length);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(O[i]<0)continue;cn.fill(0);
+   for(let dy=-1;dy<2;dy++)for(let dx=-1;dx<2;dx++){const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=w||Y>=h)continue;const l=O[Y*w+X];if(l>=0)cn[l]++}
+   let b=O[i];for(let j=0;j<cn.length;j++)if(cn[j]>cn[b])b=j;L[i]=b}}
+ const ar=new Int32Array(pal.length);let hasT=false;for(const l of L){if(l>=0)ar[l]++;else hasT=true}
+ const ord=[...pal.keys()].filter(j=>ar[j]).sort((a,b)=>ar[b]-ar[a]),rk=new Int16Array(pal.length).fill(-1);ord.forEach((j,r)=>rk[j]=r);
+ if(!ord.length){$("st").textContent=t("empty");return}
+ const R=new Int16Array(N);for(let i=0;i<N;i++)R[i]=L[i]<0?-1:rk[L[i]];
+ const P=ord.map(j=>pal[j]),bg=hasT?-1:0;
+ await new Promise(r=>setTimeout(r,10));
+ const raw=P.map((_,j)=>{if(j===0&&bg===0)return null;const m=new Uint8Array(N);for(let i=0;i<N;i++)m[i]=R[i]>=j?1:0;return trace(m,w,h)});
+ const budget=Math.round(+$("kb").value*1000),mf=+$("maxf").value||1e9;let eps=+$("eps").value,mA=+$("minA").value,r,adj=false;
+ for(let a=0;a<9;a++){r=build(raw,P,w,h,bg,eps,mA,budget);if(!(r.files.some(f=>f.over)||r.files.length>mf))break;eps*=1.35;mA=mA*1.4+1;adj=true}
+ res={...r,w,h,name:src.name,adj,pix:cv.toDataURL("image/png")};
+ const svg=r.hd+r.files.map(f=>f.inner).join("")+r.ft;urls.forEach(URL.revokeObjectURL);urls=[URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"}))];
+ res.vec=urls[0];$("out").hidden=false;$("st").textContent="";show();list()}
+function show(){$("vimg").src=tab=="vec"?res.vec:res.pix;$("tvec").classList.toggle("on",tab=="vec");$("tpix").classList.toggle("on",tab=="pix");$("zoom").oninput()}
+$("tvec").onclick=()=>{tab="vec";res&&show()};$("tpix").onclick=()=>{tab="pix";res&&show()};
+const nm=(i)=>`${res.name}_${String(i+1).padStart(2,"0")}.svg`;
+function list(){const f=res.files,tot=f.reduce((s,x)=>s+x.size,0);
+ $("stats").innerHTML=`${f.length} ${t("files")} · ${(tot/1000).toFixed(1)} KB · ${res.shapes} ${t("shapes")}`+(res.adj?`<br>${t("adj")}`:"")+(f.some(x=>x.over)?`<br><span class="ko">${t("over")}</span>`:"");
+ $("list").innerHTML="";f.forEach((x,i)=>{const d=document.createElement("div");d.className="fl";
+  d.innerHTML=`<span>${nm(i)} <span class="${x.over?"ko":"ok"}">${(x.size/1000).toFixed(1)} KB</span></span>`;
+  const b=document.createElement("button");b.textContent=t("save");b.onclick=()=>save(nm(i),new Blob([x.svg],{type:"image/svg+xml"}));d.appendChild(b);$("list").appendChild(d)})}
+
+// zip (store)
+const T=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=-1;for(let i=0;i<b.length;i++)c=T[(c^b[i])&255]^(c>>>8);return(c^-1)>>>0};
+function zip(list){const en=new TextEncoder(),parts=[],cd=[];let off=0;
+ for(const f of list){const n=en.encode(f.name),d=en.encode(f.data),c=crc32(d),z=d.length;
+  const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint32(14,c,true);h.setUint32(18,z,true);h.setUint32(22,z,true);h.setUint16(26,n.length,true);
+  parts.push(h.buffer,n,d);
+  const e=new DataView(new ArrayBuffer(46));e.setUint32(0,0x02014b50,true);e.setUint16(4,20,true);e.setUint16(6,20,true);e.setUint16(8,0x0800,true);e.setUint32(16,c,true);e.setUint32(20,z,true);e.setUint32(24,z,true);e.setUint16(28,n.length,true);e.setUint32(42,off,true);
+  cd.push(e.buffer,n);off+=30+n.length+z}
+ let cs=0;for(const x of cd)cs+=x.byteLength||x.length;
+ const E=new DataView(new ArrayBuffer(22));E.setUint32(0,0x06054b50,true);E.setUint16(8,list.length,true);E.setUint16(10,list.length,true);E.setUint32(12,cs,true);E.setUint32(16,off,true);
+ return new Blob([...parts,...cd,E.buffer],{type:"application/zip"})}
+
+async function save(name,blob){try{const dl=await (window.claude&&claude.use?claude.use("downloads"):null);
+ if(dl){await dl.save({filename:name,data:blob});$("st").textContent=t("saved");return}}catch(e){$("st").textContent=t("fail");return}
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove()}
+$("zip").onclick=()=>res&&save(res.name+"_gt7.zip",zip(res.files.map((f,i)=>({name:nm(i),data:f.svg}))));
+$("go").onclick=run;tr();
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script>
+</body>
+</html>
